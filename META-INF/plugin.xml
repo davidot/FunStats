@@ -42,7 +42,7 @@
 
       <action id="FunStats.calc" class="FunStats" text="Funstats calculate"
               description="Calculate the fun stats">
-          <add-to-group group-id="MainMenu" anchor="first"/>
+          <add-to-group group-id="InspectCodeGroup" anchor="last"/>
       </action>
   </actions>
 
