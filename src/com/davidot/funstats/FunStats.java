@@ -4,7 +4,6 @@ import com.intellij.analysis.AnalysisScope;
 import com.intellij.analysis.BaseAnalysisAction;
 import com.intellij.analysis.BaseAnalysisActionDialog;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,13 +16,15 @@ import javax.swing.JComponent;
  */
 public class FunStats extends BaseAnalysisAction {
 
+
     public FunStats() {
         super("Funstats calculation","Funstats");
     }
 
     @Override
-    protected void analyze(@NotNull Project project, @NotNull AnalysisScope analysisScope) {
-        Messages.showMessageDialog(project, "Test title", "Test Title 2", Messages.getInformationIcon());
+    protected void analyze(@NotNull final Project project, @NotNull AnalysisScope analysisScope) {
+        FunStatsCalculator calculator = new FunStatsCalculator(project,analysisScope);
+        calculator.run();
     }
 
     @Nullable
@@ -31,4 +32,5 @@ public class FunStats extends BaseAnalysisAction {
     protected JComponent getAdditionalActionSettings(Project project, BaseAnalysisActionDialog dialog) {
         return new SettingsPanel(project,dialog);
     }
+
 }

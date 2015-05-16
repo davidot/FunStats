@@ -10,10 +10,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public class FunStatsConfiguration implements PersistentStateComponent<FunStatsConfiguration.State> {
 
-    class State {
+    public class State {
         //settings
         public String currentProfile = "";
-        public boolean autoScroll = false;
+        public boolean useTestFiles = false;
     }
 
     State state;
@@ -27,11 +27,11 @@ public class FunStatsConfiguration implements PersistentStateComponent<FunStatsC
     }
 
     public boolean getAutoScroll() {
-        return state.autoScroll;
+        return state.useTestFiles;
     }
 
-    public void setAutoScroll(boolean autoScroll) {
-        state.autoScroll = autoScroll;
+    public void setUseTestFiles(boolean useTestFiles) {
+        state.useTestFiles = useTestFiles;
     }
 
     @Nullable

@@ -1,5 +1,6 @@
 package com.davidot.funstats;
 
+import com.davidot.funstats.config.FunStatsConfiguration;
 import com.intellij.analysis.BaseAnalysisActionDialog;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
@@ -9,6 +10,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * todo
@@ -20,7 +23,11 @@ public class SettingsPanel extends JPanel {
     public SettingsPanel(Project project, BaseAnalysisActionDialog dialog) {
         super(new GridBagLayout());
 
-        final JCheckBox checkBox = buildCheckBox();
+        final FunStatsComponent component = project.getComponent(FunStatsComponent.class);
+
+        FunStatsConfiguration configuration = component.getConfiguration();
+
+        final JCheckBox checkBox = createAutoScroll(configuration);
 
         final JComponent separator =
                 new TitledSeparator("Funstats Calculator");
@@ -42,8 +49,15 @@ public class SettingsPanel extends JPanel {
         add(checkBox, constraints);
     }
 
-    private JCheckBox buildCheckBox() {
-        return new JCheckBox("Check variable names");
+    private JCheckBox createAutoScroll(final FunStatsConfiguration configuration) {
+        final JCheckBox jCheckBox = new JCheckBox("Scan test files");
+        jCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                configuration.setUseTestFiles(jCheckBox.isSelected());
+            }
+        });
+        return jCheckBox;
     }
 
 }
