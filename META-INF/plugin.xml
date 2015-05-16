@@ -34,13 +34,16 @@
 
   <project-components>
     <!-- Add your project components here -->
+      <component>
+          <implementation-class>com.davidot.funstats.FunStatsComponent</implementation-class>
+      </component>
   </project-components>
 
   <actions>
     <!-- Add your actions here -->
 
 
-      <action id="FunStats.calc" class="FunStats" text="Funstats calculate"
+      <action id="FunStats.calc" class="com.davidot.funstats.FunStats" text="Funstats calculate"
               description="Calculate the fun stats">
           <add-to-group group-id="InspectCodeGroup" anchor="last"/>
       </action>
