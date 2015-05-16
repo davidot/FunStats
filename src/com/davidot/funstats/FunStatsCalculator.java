@@ -107,22 +107,49 @@ public class FunStatsCalculator {
         }
 
         HashMap<Integer, Integer> memberLengths = new HashMap<>();
+        long total = 0;
         for(Variable variable: members) {
             int now = 1;
             int length = variable.getName().length();
+            total += length;
             if(memberLengths.containsKey(length)) {
                 now = memberLengths.get(length) + 1;
             }
             memberLengths.put(length, now);
         }
 
+        double average = 0;
+        if(!members.isEmpty()) {
+            average = total / members.size();
+        }
+
+        int mean = 0;
+        int meanLength = 0;
+        int max = 0;
+
         System.out.println("\t-\tMembers\t-\t");
         System.out.println("|\tLength\t|\tTimes\t|");
         for(Map.Entry<Integer, Integer> entry : memberLengths.entrySet()) {
             System.out.println("|\t" + entry.getKey() + "\t\t|\t" + entry.getValue() + "\t\t|");
+            if(entry.getValue() > mean) {
+                mean = entry.getValue();
+                meanLength = entry.getKey();
+            }
+            if(entry.getKey() > max) {
+                max = entry.getKey();
+            }
+        }
+        System.out.println("Average:" + average);
+        System.out.println("Mean:" + (meanLength < 1 ? "No mean" :
+                meanLength + " " + mean + " times"));
+
+        for(Variable variable : members) {
+            if(variable.getName().length() == max) {
+                System.out.println("Longest membername:" + variable);
+            }
         }
 
-        HashMap<Integer, Integer> paramLengths = new HashMap<>();
+        /*HashMap<Integer, Integer> paramLengths = new HashMap<>();
         for(Variable variable: parameters) {
             int now = 1;
             int length = variable.getName().length();
@@ -152,7 +179,7 @@ public class FunStatsCalculator {
         System.out.println("|\tLength\t|\tTimes\t|");
         for(Map.Entry<Integer, Integer> entry : localLengths.entrySet()) {
             System.out.println("|\t" + entry.getKey() + "\t\t|\t" + entry.getValue() + "\t\t|");
-        }
+        }*/
 
     }
 
@@ -161,29 +188,33 @@ public class FunStatsCalculator {
 //            System.out.println("In file analyzing:{" + element.getText() + "}");
             if(element instanceof PsiClass) {
                 PsiClass psiClass = (PsiClass) element;
-                analyzeElementHolder(psiClass);
+                analyzeClass(psiClass);
             }
         }
     }
 
-    public void analyzeElementHolder(PsiElement classElement) {
-        System.out.println("Analyzing holder:" + classElement);
+    public void analyzeClass(PsiClass psiClass) {
+        analyzeElementHolder(psiClass, psiClass);
+    }
+
+    public void analyzeElementHolder(PsiElement classElement, PsiClass psiClass) {
+//        System.out.println("Analyzing holder:" + classElement);
         for(PsiElement element: classElement.getChildren()) {
             if(element instanceof PsiWhiteSpace || element instanceof PsiJavaToken) {
                 continue;
             }
-            System.out.println("Analyzing element:" + element + " => " + element.getText());
+//            System.out.println("Analyzing element:" + element + " => " + element.getText());
 
             if(element instanceof PsiField || element instanceof PsiParameter || element instanceof PsiLocalVariable) {
-                analyzeElement(element);
+                analyzeElement(element,psiClass);
             } else {
-                analyzeElementHolder(element);
+                analyzeElementHolder(element,psiClass);
             }
         }
         System.out.println("-----------------------------");
     }
 
-    public void analyzeElement(PsiElement element) {
+    public void analyzeElement(PsiElement element, PsiClass containingClass) {
 //        System.out.println("Analyzing element:" + element + " => " + element.getText());
         String name = "";
         VariableVisibility visibility = null;
@@ -228,9 +259,9 @@ public class FunStatsCalculator {
             name = localVariable.getName();
         }
 
-        System.out.println("Variable name:" + name);
-        System.out.println("Variable type:" + type);
-        System.out.println("Variable visibility" + visibility);
+//        System.out.println("Variable name:" + name);
+//        System.out.println("Variable type:" + type);
+//        System.out.println("Variable visibility" + visibility);
 
 
         if(name.isEmpty()) {
@@ -246,7 +277,8 @@ public class FunStatsCalculator {
 
 //            System.out.println("Found variable");
 
-        variables.add(new Variable(name, visibility, type));
+
+        variables.add(new Variable(name, visibility, type, containingClass.getName()));
 
     }
 
