@@ -13,7 +13,7 @@ public class FunStatsConfiguration implements PersistentStateComponent<FunStatsC
     public class State {
         //settings
         public String currentProfile = "";
-        public boolean useTestFiles = false;
+        public boolean scanLocalFields = false;
     }
 
     State state;
@@ -26,12 +26,12 @@ public class FunStatsConfiguration implements PersistentStateComponent<FunStatsC
         state.currentProfile = currentProfile;
     }
 
-    public boolean getAutoScroll() {
-        return state.useTestFiles;
+    public boolean getScanLocalFields() {
+        return state.scanLocalFields;
     }
 
-    public void setUseTestFiles(boolean useTestFiles) {
-        state.useTestFiles = useTestFiles;
+    public void setScanLocalFields(boolean scanLocalFields) {
+        state.scanLocalFields = scanLocalFields;
     }
 
     @Nullable

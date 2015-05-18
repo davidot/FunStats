@@ -54,7 +54,7 @@ public class SettingsPanel extends JPanel {
         jCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                configuration.setUseTestFiles(jCheckBox.isSelected());
+                configuration.setScanLocalFields(jCheckBox.isSelected());
             }
         });
         return jCheckBox;
