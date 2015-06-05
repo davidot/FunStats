@@ -5,26 +5,30 @@ package com.davidot.funstats.results;
  *
  * @author davidot
  */
-public class Variable {
+public class Method {
 
     private String name;
 
     private Visibility visibility;
 
-    private String type;
+    private Variable[] params;
 
     private String containingClass;
 
-    public Variable(String name, Visibility visibility, String type, String containingClass) {
+    public Method(String name, Visibility visibility, Variable[] params, String containingClass) {
         this.name = name;
         this.visibility = visibility;
-        this.type = type;
+        this.params = params;
         this.containingClass = containingClass;
     }
 
     @Override
     public String toString() {
-        return visibility + " " + type + " " + name + System.lineSeparator();
+        StringBuilder builder = new StringBuilder();
+        for(Variable v:params) {
+            builder.append(v.getType()).append(" ").append(v.getName());
+        }
+        return visibility + " " + builder.toString() + " " + name + System.lineSeparator();
     }
 
     public String getName() {
@@ -35,7 +39,4 @@ public class Variable {
         return visibility;
     }
 
-    public String getType() {
-        return type;
-    }
 }

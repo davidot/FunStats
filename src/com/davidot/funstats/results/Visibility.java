@@ -5,7 +5,7 @@ package com.davidot.funstats.results;
  *
  * @author davidot
  */
-public enum VariableVisibility {
+public enum Visibility {
 
     PUBLIC("public"),
     PROTECTED("protected"),
@@ -17,7 +17,7 @@ public enum VariableVisibility {
 
     private final String string;
 
-    VariableVisibility(String string) {
+    Visibility(String string) {
         this.string = string;
     }
 

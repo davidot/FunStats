@@ -1,8 +1,7 @@
-package com.davidot.funstats;
+package com.davidot.funstats.results;
 
+import com.davidot.funstats.FunStatsComponent;
 import com.davidot.funstats.config.FunStatsConfiguration;
-import com.davidot.funstats.results.Variable;
-import com.davidot.funstats.results.VariableVisibility;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
@@ -10,9 +9,12 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.ui.table.JBTable;
 
+import javax.swing.table.AbstractTableModel;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * todo
@@ -35,6 +37,8 @@ public class FunStatsResults {
     private List<Variable> privateMembers = new ArrayList<>();
     private List<Variable> paramMembers = new ArrayList<>();
     private List<Variable> localMembers = new ArrayList<>();
+
+    private List<Method> methods = new ArrayList<>();
     private Project project;
 
     public FunStatsResults(Project project, FunStatsComponent component, int filesRead) {
@@ -46,7 +50,7 @@ public class FunStatsResults {
     }
 
     public void addVariable(Variable variable) {
-        if(variable.getVisibility() == VariableVisibility.INLINE && !scanLocal) {
+        if(variable.getVisibility() == Visibility.INLINE && !scanLocal) {
             //don't add it
             return;
         }
@@ -72,6 +76,10 @@ public class FunStatsResults {
         }
     }
 
+    public void addMethod(Method method) {
+        methods.add(method);
+    }
+
     public void show() {
         ToolWindowManager manager = ToolWindowManager.getInstance(project);
 
@@ -85,14 +93,53 @@ public class FunStatsResults {
 
     private Component createTabbedPane() {
         JBTabbedPane tabbedPane = new JBTabbedPane();
-        tabbedPane.insertTab("Public members",null, createTab(publicMembers),"The public members",0);
+        tabbedPane.insertTab("Public members",null, createTab(toStats(publicMembers)),"The public members",0);
 
 
         return tabbedPane;
     }
 
-    private Component createTab(List<Variable> members) {
-        JBTable table = new JBTable();
+    private HashMap<Integer, Integer> toStats(List<Variable> members) {
+        HashMap<Integer, Integer> memberLengths = new HashMap<>();
+        for(Variable variable: members) {
+            int now = 1;
+            int length = variable.getName().length();
+            if(memberLengths.containsKey(length)) {
+                now = memberLengths.get(length) + 1;
+            }
+            memberLengths.put(length, now);
+        }
+        return memberLengths;
+    }
+
+    private Component createTab(final HashMap<Integer,Integer> lengthMap) {
+        final int lengthMapSize = lengthMap.size();
+
+        final int[] rows = new int[lengthMapSize];
+        int i = 0;
+        for(Map.Entry<Integer,Integer> entry:lengthMap.entrySet()) {
+            rows[i++] = entry.getKey();
+        }
+
+        JBTable table = new JBTable(new AbstractTableModel() {
+            @Override
+            public int getRowCount() {
+                return 2;
+            }
+
+            @Override
+            public int getColumnCount() {
+                return lengthMapSize;
+            }
+
+            @Override
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                if(rowIndex == 0) {
+                    return rows[rowIndex];
+                }
+                return lengthMap.get(rows[rowIndex]);
+            }
+        });
         table.setAutoResizeMode(JBTable.AUTO_RESIZE_OFF);
 
 

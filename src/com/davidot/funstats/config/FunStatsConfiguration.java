@@ -10,13 +10,14 @@ import org.jetbrains.annotations.Nullable;
  */
 public class FunStatsConfiguration implements PersistentStateComponent<FunStatsConfiguration.State> {
 
-    public class State {
+    public static class State {
+
         //settings
         public String currentProfile = "";
         public boolean scanLocalFields = false;
     }
 
-    State state;
+    State state = new State();
 
     public String getCurrentProfile() {
         return state.currentProfile;

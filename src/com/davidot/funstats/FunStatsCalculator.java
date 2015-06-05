@@ -1,7 +1,9 @@
 package com.davidot.funstats;
 
+import com.davidot.funstats.results.FunStatsResults;
+import com.davidot.funstats.results.Method;
 import com.davidot.funstats.results.Variable;
-import com.davidot.funstats.results.VariableVisibility;
+import com.davidot.funstats.results.Visibility;
 import com.intellij.analysis.AnalysisScope;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -14,6 +16,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiWhiteSpace;
@@ -33,12 +36,16 @@ public class FunStatsCalculator {
 
     private final Project project;
     private final AnalysisScope scope;
+    private final FunStatsComponent component;
+    private FunStatsResults results;
     private List<Variable> variables = new ArrayList<Variable>();
+    private List<Method> methods = new ArrayList<Method>();
 
 
-    public FunStatsCalculator(Project project, AnalysisScope scope) {
+    public FunStatsCalculator(Project project, AnalysisScope scope, FunStatsComponent component) {
         this.project = project;
         this.scope = scope;
+        this.component = component;
     }
 
     public void run() {
@@ -46,11 +53,10 @@ public class FunStatsCalculator {
             @Override
             public void run(@NotNull final ProgressIndicator indicator) {
                 final int filesNum = scope.getFileCount();
+                results = new FunStatsResults(project,component,filesNum);
                 ApplicationManager.getApplication().runReadAction(new Runnable() {
                     @Override
                     public void run() {
-
-
 
                         scope.accept(new PsiElementVisitor() {
                             int currentFilesDone = 0;
@@ -80,6 +86,7 @@ public class FunStatsCalculator {
     }
 
     private void onSuccess() {
+        results.show();
         System.out.println(variables);
 
         List<Variable> members = new ArrayList<>();
@@ -203,9 +210,11 @@ public class FunStatsCalculator {
             if(element instanceof PsiWhiteSpace || element instanceof PsiJavaToken) {
                 continue;
             }
-//            System.out.println("Analyzing element:" + element + " => " + element.getText());
+            System.out.println("Analyzing element:" + element + " => " + element.getText());
 
-            if(element instanceof PsiField || element instanceof PsiParameter || element instanceof PsiLocalVariable) {
+            if(element instanceof PsiMethod) {
+                analyzeMethod((PsiMethod) element,psiClass);
+            } else if(element instanceof PsiField || element instanceof PsiLocalVariable) {
                 analyzeElement(element,psiClass);
             } else {
                 analyzeElementHolder(element,psiClass);
@@ -214,10 +223,59 @@ public class FunStatsCalculator {
         System.out.println("-----------------------------");
     }
 
+    public void analyzeMethod(PsiMethod method, PsiClass containingClass) {
+        String name = "";
+        Visibility visibility = Visibility.PACKAGE_PRIVATE;
+        List<PsiParameter> parameters = new ArrayList<>();
+        String className = containingClass.getName();
+
+        PsiModifierList psiModifierList = method.getModifierList();
+        String modifier;
+        if(psiModifierList != null) {
+            modifier = psiModifierList.getText();
+            for(Visibility vis : Visibility.values()) {
+                if(modifier.equals(vis.getString())) {
+                    visibility = vis;
+                }
+            }
+        }
+
+
+        for(PsiElement element :method.getParameterList().getChildren()) {
+            if(element instanceof PsiParameter) {
+                parameters.add((PsiParameter) element);
+            }
+        }
+
+        List<Variable> params = new ArrayList<>();
+
+        for(PsiParameter psiParameter: parameters) {
+            String pType = psiParameter.getType().getCanonicalText();
+
+            String pName = psiParameter.getName();
+
+            if(pType.isEmpty() || pName.isEmpty()) {
+                continue;
+            }
+
+            params.add(new Variable(pName,Visibility.PARAMETER,pType, className));
+        }
+
+        if(name.isEmpty()) {
+//                System.out.println("Can't find name");
+            return;
+        }
+
+        methods.add(new Method(name,visibility, params.toArray(new Variable[params.size()]),className));
+        variables.addAll(params);
+
+
+    }
+
     public void analyzeElement(PsiElement element, PsiClass containingClass) {
 //        System.out.println("Analyzing element:" + element + " => " + element.getText());
         String name = "";
-        VariableVisibility visibility = null;
+        Visibility visibility = null;
         String type = "";
 
         if(element instanceof PsiField) {
@@ -228,14 +286,14 @@ public class FunStatsCalculator {
             String modifier;
             if(psiModifierList != null) {
                 modifier = psiModifierList.getText();
-                for(VariableVisibility vis : VariableVisibility.values()) {
+                for(Visibility vis : Visibility.values()) {
                     if(modifier.equals(vis.getString())) {
                         visibility = vis;
                     }
                 }
             }
             if(visibility == null) {
-                visibility = VariableVisibility.PACKAGE_PRIVATE;
+                visibility = Visibility.PACKAGE_PRIVATE;
             }
 
             type = psiField.getType().getCanonicalText();
@@ -246,7 +304,7 @@ public class FunStatsCalculator {
 
             type = psiParameter.getType().getCanonicalText();
 
-            visibility = VariableVisibility.PARAMETER;
+            visibility = Visibility.PARAMETER;
 
             name = psiParameter.getName();
         } else if(element instanceof PsiLocalVariable) {
@@ -254,7 +312,7 @@ public class FunStatsCalculator {
 
             type = localVariable.getType().getCanonicalText();
 
-            visibility = VariableVisibility.INLINE;
+            visibility = Visibility.INLINE;
 
             name = localVariable.getName();
         }

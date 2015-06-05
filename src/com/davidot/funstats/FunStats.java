@@ -23,7 +23,8 @@ public class FunStats extends BaseAnalysisAction {
 
     @Override
     protected void analyze(@NotNull final Project project, @NotNull AnalysisScope analysisScope) {
-        FunStatsCalculator calculator = new FunStatsCalculator(project,analysisScope);
+        FunStatsComponent component = project.getComponent(FunStatsComponent.class);
+        FunStatsCalculator calculator = new FunStatsCalculator(project,analysisScope,component);
         calculator.run();
     }
 

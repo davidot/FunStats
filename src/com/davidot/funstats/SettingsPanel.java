@@ -50,7 +50,7 @@ public class SettingsPanel extends JPanel {
     }
 
     private JCheckBox createAutoScroll(final FunStatsConfiguration configuration) {
-        final JCheckBox jCheckBox = new JCheckBox("Scan test files");
+        final JCheckBox jCheckBox = new JCheckBox("Include local fields");
         jCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
